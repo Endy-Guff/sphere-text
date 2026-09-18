@@ -1,0 +1,947 @@
+/* ---------------------------------------------------------------------------
+   Sphere Typography — UI в стилистике shadcn/ui.
+
+   Токены (имена и oklch-значения) взяты как есть из shadcn-ui/ui,
+   apps/v4/app/globals.css. Компоненты ниже — ручной CSS-порт рецептов из
+   apps/v4/registry/new-york-v4/ui: button, input, textarea, select, switch,
+   slider, card, label, toggle-group. Tailwind не подключаем — в проекте нет
+   сборки, всё должно оставаться чистой статикой.
+
+   Тема переключается классом .dark на <html> — ровно так же, как у shadcn.
+   --------------------------------------------------------------------------- */
+
+/* --- Design tokens ---------------------------------------------------------- */
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0% 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0% 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0% 0 0);
+  --primary: oklch(0% 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.97 0.01 17);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0% 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --surface: oklch(0.98 0 0);
+  --selection: oklch(0% 0 0);
+  --selection-foreground: oklch(1 0 0);
+
+  /* Производные — как @theme inline в shadcn. */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm:
+    0 1px 3px 0 rgb(0 0 0 / 0.1),
+    0 1px 2px -1px rgb(0 0 0 / 0.1);
+  /* focus-visible:ring-[3px] ring-ring/50 */
+  --ring-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 50%, transparent);
+
+  /* Geist в проект не тащим (нет CDN) — берём ближайший системный стек. */
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+
+  /* Стрелка нативного <select>: lucide chevron-down цветом muted-foreground. */
+  --select-chevron: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23737373' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+
+  --panel-px: 1.25rem;
+  --panel-py: 1.25rem;
+
+  color-scheme: light;
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.371 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.58 0.22 27);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --surface: oklch(0.2 0 0);
+  --selection: oklch(0.922 0 0);
+  --selection-foreground: oklch(0.205 0 0);
+
+  --select-chevron: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a1a1a1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+
+  color-scheme: dark;
+}
+
+/* --- Base ------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  border-color: var(--border);
+}
+
+::selection {
+  background: var(--selection);
+  color: var(--selection-foreground);
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: minmax(280px, 420px) 1fr;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* --- Sidebar ---------------------------------------------------------------- */
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: var(--panel-py) var(--panel-px);
+  border-right: 1px solid var(--sidebar-border);
+  background: var(--sidebar);
+  color: var(--sidebar-foreground);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.panel__header h1 {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.panel__header p {
+  margin: 0.25rem 0 0;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+/* Ghost icon button (button variant="ghost" size="icon-sm"). */
+.icon-btn {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.icon-btn:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.icon-btn:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-shadow);
+}
+
+.icon-btn svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Иконка темы: показываем ту, на которую переключимся. */
+.theme-toggle__moon {
+  display: none;
+}
+
+.dark .theme-toggle__moon {
+  display: block;
+}
+
+.dark .theme-toggle__sun {
+  display: none;
+}
+
+/* --- Card (section) --------------------------------------------------------- */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--card);
+  color: var(--card-foreground);
+  box-shadow: var(--shadow-sm);
+}
+
+.section__title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.section__title svg {
+  width: 1rem;
+  height: 1rem;
+  color: var(--muted-foreground);
+}
+
+/* --- Fields & labels -------------------------------------------------------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.field__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.field__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--foreground);
+  user-select: none;
+}
+
+.field__value {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.field__hint {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--muted-foreground);
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.field-row--3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.field-row--size {
+  grid-template-columns: 1fr 96px;
+}
+
+/* --- Input / Textarea / Select ---------------------------------------------- */
+
+textarea,
+select,
+input[type="number"],
+input[type="text"] {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--foreground);
+  font: 400 0.875rem/1.4 var(--font-sans);
+  box-shadow: var(--shadow-xs);
+  transition: color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  outline: none;
+}
+
+/* Только background-color: шорткат background сбросил бы background-repeat
+   и chevron у <select> размножился бы плиткой. */
+.dark textarea,
+.dark select,
+.dark input[type="number"],
+.dark input[type="text"] {
+  background-color: color-mix(in oklab, var(--input) 30%, transparent);
+}
+
+textarea::placeholder,
+input::placeholder {
+  color: var(--muted-foreground);
+}
+
+textarea:focus-visible,
+select:focus-visible,
+input[type="number"]:focus-visible,
+input[type="text"]:focus-visible {
+  border-color: var(--ring);
+  box-shadow: var(--ring-shadow);
+}
+
+input[type="number"],
+input[type="text"] {
+  height: 2.25rem;
+  padding: 0.25rem 0.75rem;
+}
+
+textarea {
+  min-height: 4rem;
+  padding: 0.5rem 0.75rem;
+  resize: vertical;
+}
+
+select {
+  height: 2.25rem;
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: var(--select-chevron);
+  background-repeat: no-repeat;
+  background-position: right 0.625rem center;
+  background-size: 1rem 1rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.dark select:hover {
+  background-color: color-mix(in oklab, var(--input) 50%, transparent);
+}
+
+/* Выпадающий список рисует ОС — задаём ему цвета темы явно. */
+select option {
+  background: var(--popover);
+  color: var(--popover-foreground);
+}
+
+/* Число с единицей измерения («мм»): суффикс снаружи инпута, чтобы не лез
+   на нативные стрелки спиннера. */
+.field-suffix {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.field-suffix__unit {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+/* --- Color input ------------------------------------------------------------ */
+
+input[type="color"] {
+  width: 100%;
+  height: 2.25rem;
+  padding: 3px;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-md);
+  background: transparent;
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.dark input[type="color"] {
+  background-color: color-mix(in oklab, var(--input) 30%, transparent);
+}
+
+input[type="color"]:focus-visible {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: var(--ring-shadow);
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: calc(var(--radius-md) - 3px);
+}
+
+input[type="color"]::-moz-color-swatch {
+  border: none;
+  border-radius: calc(var(--radius-md) - 3px);
+}
+
+/* --- Slider ----------------------------------------------------------------- */
+
+/* Порт shadcn Slider на нативный range: трек h-1.5 bg-muted, закрашенная
+   часть bg-primary (прогресс приезжает в --range-progress из index.html),
+   бегунок size-4 с бордером primary и ring-4 на hover/focus. */
+input[type="range"] {
+  width: 100%;
+  height: 1rem;
+  margin: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 0.375rem;
+  border-radius: 9999px;
+  background: linear-gradient(
+    to right,
+    var(--primary) 0 var(--range-progress, 0%),
+    var(--muted) var(--range-progress, 0%) 100%
+  );
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1rem;
+  height: 1rem;
+  margin-top: -0.3125rem;
+  border: 1px solid var(--primary);
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.15s ease;
+}
+
+input[type="range"]:hover::-webkit-slider-thumb,
+input[type="range"]:focus-visible::-webkit-slider-thumb {
+  box-shadow:
+    var(--shadow-sm),
+    0 0 0 4px color-mix(in oklab, var(--ring) 50%, transparent);
+}
+
+input[type="range"]::-moz-range-track {
+  height: 0.375rem;
+  border-radius: 9999px;
+  background: var(--muted);
+}
+
+input[type="range"]::-moz-range-progress {
+  height: 0.375rem;
+  border-radius: 9999px;
+  background: var(--primary);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid var(--primary);
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.15s ease;
+}
+
+input[type="range"]:hover::-moz-range-thumb,
+input[type="range"]:focus-visible::-moz-range-thumb {
+  box-shadow:
+    var(--shadow-sm),
+    0 0 0 4px color-mix(in oklab, var(--ring) 50%, transparent);
+}
+
+/* --- Button ----------------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 2.25rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font: 500 0.875rem/1 var(--font-sans);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+}
+
+.btn svg {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.btn:hover {
+  background: color-mix(in oklab, var(--primary) 90%, transparent);
+}
+
+.btn:focus-visible {
+  border-color: var(--ring);
+  box-shadow: var(--ring-shadow);
+}
+
+.btn:disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* variant="outline" */
+.btn--secondary {
+  border-color: var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  box-shadow: var(--shadow-xs);
+}
+
+.dark .btn--secondary {
+  border-color: var(--input);
+  background: color-mix(in oklab, var(--input) 30%, transparent);
+}
+
+.btn--secondary:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.dark .btn--secondary:hover {
+  background: color-mix(in oklab, var(--input) 50%, transparent);
+}
+
+/* --- Switch ----------------------------------------------------------------- */
+
+.toggle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.toggle__track {
+  position: relative;
+  flex: 0 0 2rem;
+  height: 1.15rem;
+  border: 1px solid transparent;
+  border-radius: 9999px;
+  background: var(--input);
+  box-shadow: var(--shadow-xs);
+  transition: background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dark .toggle__track {
+  background: color-mix(in oklab, var(--input) 80%, transparent);
+}
+
+.toggle__track::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 1rem;
+  height: 1rem;
+  margin-top: -0.5rem;
+  border-radius: 9999px;
+  background: var(--background);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.dark .toggle__track::after {
+  background: var(--foreground);
+}
+
+.toggle input:checked + .toggle__track {
+  background: var(--primary);
+}
+
+.toggle input:checked + .toggle__track::after {
+  transform: translateX(calc(100% - 2px));
+  background: var(--background);
+}
+
+.dark .toggle input:checked + .toggle__track::after {
+  background: var(--primary-foreground);
+}
+
+.toggle input:focus-visible + .toggle__track {
+  border-color: var(--ring);
+  box-shadow: var(--ring-shadow);
+}
+
+.toggle__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--foreground);
+}
+
+/* --- Toggle group (выравнивание текста) ------------------------------------- */
+
+.segmented {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+}
+
+.segmented__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  height: 2.25rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--input);
+  border-left: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--foreground);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+}
+
+.segmented__btn:first-child {
+  border-left: 1px solid var(--input);
+  border-top-left-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-md);
+}
+
+.segmented__btn:last-child {
+  border-top-right-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
+}
+
+.segmented__btn svg {
+  width: 1rem;
+  height: 1rem;
+  fill: currentColor;
+}
+
+.segmented__btn:hover {
+  background: color-mix(in oklab, var(--muted) 60%, transparent);
+}
+
+.segmented__btn.is-active {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.segmented__btn:focus-visible {
+  z-index: 10;
+  border-color: var(--ring);
+  box-shadow: var(--ring-shadow);
+}
+
+/* --- Text blocks ------------------------------------------------------------ */
+
+#blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: color-mix(in oklab, var(--muted) 50%, transparent);
+}
+
+.block--dragging {
+  opacity: 0.5;
+}
+
+.block--drop-before {
+  box-shadow: 0 -2px 0 0 var(--primary);
+}
+
+.block--drop-after {
+  box-shadow: 0 2px 0 0 var(--primary);
+}
+
+.block__head {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.block__handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-left: -0.25rem;
+  border-radius: var(--radius-sm);
+  color: var(--muted-foreground);
+  cursor: grab;
+  user-select: none;
+}
+
+.block__handle svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.block__handle:hover {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.block__handle:active {
+  cursor: grabbing;
+}
+
+.block__title {
+  flex: 1;
+  padding-left: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--muted-foreground);
+}
+
+.block__delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+}
+
+.block__delete svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.block__delete:hover {
+  background: color-mix(in oklab, var(--destructive) 12%, transparent);
+  color: var(--destructive);
+}
+
+.block__delete:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--destructive) 25%, transparent);
+}
+
+.block__text {
+  min-height: 4rem;
+  font-weight: 500;
+}
+
+.block .field__label {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* --- Sidebar footer --------------------------------------------------------- */
+
+.panel__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.hint {
+  margin: 0;
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+/* --- Viewport --------------------------------------------------------------- */
+
+.viewport {
+  position: relative;
+  min-height: 0;
+  background: var(--background);
+}
+
+#canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+/* --- Режим отладки ---------------------------------------------------------- */
+
+/* Скрываем без !important и без display:none на самом элементе: правило просто
+   перестаёт применяться в режиме отладки, и контрол возвращает свою нормальную
+   раскладку (.field — flex, .section — flex) вместо display:block. */
+body:not(.is-debug) .debug-only {
+  display: none;
+}
+
+/* Без селекта «Начертание» вторая колонка осталась бы пустой. */
+body:not(.is-debug) .field-row--size {
+  grid-template-columns: 1fr;
+}
+
+.debug-corner {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.debug-corner__label {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--popover);
+  color: var(--muted-foreground);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+/* Пока режим выключен — тултип по ховеру; когда включён — постоянная подпись. */
+.debug-corner:hover .debug-corner__label,
+.debug-corner:focus-within .debug-corner__label {
+  opacity: 1;
+}
+
+body.is-debug .debug-corner__label {
+  opacity: 1;
+  color: var(--foreground);
+}
+
+/* Кнопка лежит поверх сферы, поэтому ей нужен собственный фон. */
+.debug-corner__btn {
+  border: 1px solid var(--border);
+  background: var(--popover);
+  color: var(--muted-foreground);
+}
+
+body.is-debug .debug-corner__btn {
+  color: var(--foreground);
+}
+
+.debug-corner__close {
+  display: none;
+}
+
+body.is-debug .debug-corner__bug {
+  display: none;
+}
+
+body.is-debug .debug-corner__close {
+  display: block;
+}
+
+.viewport--position-mode {
+  cursor: grab;
+}
+
+.viewport--position-mode:active {
+  cursor: grabbing;
+}
+
+/* --- Responsive ------------------------------------------------------------- */
+
+@media (max-width: 980px) {
+  .field-row--3 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  .app {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+  }
+
+  .panel {
+    border-right: none;
+    border-bottom: 1px solid var(--sidebar-border);
+  }
+
+  .viewport {
+    min-height: 55vh;
+  }
+}

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sphere Typography — объёмная типографика</title>
+    <link rel="stylesheet" href="style.css" />
+    <script>
+      // Тема как в shadcn: класс .dark на <html>. Ставим до первой отрисовки,
+      // чтобы не мигало светлым.
+      (() => {
+        let stored = null;
+        try {
+          stored = localStorage.getItem("sphere-theme");
+        } catch {}
+        const theme = stored === "light" ? "light" : "dark";
+        document.documentElement.classList.toggle("dark", theme === "dark");
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="app">
+      <aside class="panel">
+        <header class="panel__header">
+          <div>
+            <h1>Sphere Typography</h1>
+            <p>Текст на сфере с объёмным эффектом</p>
+          </div>
+          <button
+            type="button"
+            class="icon-btn"
+            id="theme-toggle"
+            title="Переключить тему"
+            aria-label="Переключить тему"
+          >
+            <svg
+              class="theme-toggle__sun"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="12" cy="12" r="4" />
+              <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+            </svg>
+            <svg
+              class="theme-toggle__moon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+            </svg>
+          </button>
+        </header>
+
+        <section class="section">
+          <h2 class="section__title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M4 7V4h16v3" />
+              <path d="M9 20h6" />
+              <path d="M12 4v16" />
+            </svg>
+            Текст
+          </h2>
+          <div id="blocks"></div>
+          <button type="button" class="btn btn--secondary" id="add-block-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 12h14" />
+              <path d="M12 5v14" />
+            </svg>
+            Добавить строку
+          </button>
+          <p class="field__hint" id="fonts-status"></p>
+        </section>
+
+        <section class="section">
+          <h2 class="section__title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3" />
+              <path d="M14 2v4M8 10v4M16 18v4" />
+            </svg>
+            Настройки текста
+          </h2>
+
+          <div class="field">
+            <span class="field__label">Выравнивание</span>
+            <div class="segmented" role="radiogroup" aria-label="Выравнивание текста">
+              <button
+                type="button"
+                class="segmented__btn"
+                data-align="left"
+                role="radio"
+                aria-checked="false"
+                title="По левому краю"
+                aria-label="По левому краю"
+              >
+                <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                  <rect x="2" y="3.2" width="12" height="1.5" rx="0.75" />
+                  <rect x="2" y="7.25" width="7.5" height="1.5" rx="0.75" />
+                  <rect x="2" y="11.3" width="10" height="1.5" rx="0.75" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="segmented__btn is-active"
+                data-align="center"
+                role="radio"
+                aria-checked="true"
+                title="По центру"
+                aria-label="По центру"
+              >
+                <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+                  <rect x="2" y="3.2" width="12" height="1.5" rx="0.75" />
+                  <rect x="4.25" y="7.25" width="7.5" height="1.5" rx="0.75" />
+                  <rect x="3" y="11.3" width="10" height="1.5" rx="0.75" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <label class="field">
+            <span class="field__head">
+              <span class="field__label">Расстояние между блоками</span>
+              <span class="field__value" id="block-gap-value">1.20×</span>
+            </span>
+            <input type="range" id="block-gap" min="40" max="260" value="120" />
+          </label>
+
+          <label class="field">
+            <span class="field__head">
+              <span class="field__label">Наклон текста</span>
+              <span class="field__value" id="text-angle-value">0°</span>
+            </span>
+            <input type="range" id="text-angle" min="-45" max="45" value="0" />
+          </label>
+
+          <label class="field debug-only">
+            <span class="field__head">
+              <span class="field__label">Масштаб</span>
+              <span class="field__value" id="scale-value">100%</span>
+            </span>
+            <input type="range" id="scale" min="20" max="400" value="100" />
+          </label>
+        </section>
+
+        <section class="section debug-only">
+          <h2 class="section__title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+              <circle cx="12" cy="13" r="3" />
+            </svg>
+            Камера
+          </h2>
+
+          <label class="field">
+            <span class="field__label">Фокусное расстояние</span>
+            <span class="field-suffix">
+              <input
+                type="number"
+                id="focal-length"
+                list="focal-length-presets"
+                min="24"
+                max="200"
+                step="1"
+                value="100"
+              />
+              <span class="field-suffix__unit">мм</span>
+            </span>
+            <span class="field__hint">
+              24 мм — сильная перспектива, текст выпучивается; 200 мм — плоская
+              «телевик»-картинка, по краям видно больше текста. Размер сферы
+              в кадре сохраняется.
+            </span>
+          </label>
+        </section>
+
+        <section class="section">
+          <h2 class="section__title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" />
+              <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+              <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+              <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+              <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+            </svg>
+            Цвет
+          </h2>
+
+          <div class="field-row">
+            <label class="field field--color">
+              <span class="field__label">Цвет текста</span>
+              <input type="color" id="text-color" value="#ff6a00" />
+            </label>
+            <label class="field field--color">
+              <span class="field__label">Фон страницы</span>
+              <input type="color" id="page-bg-color" value="#080b14" />
+            </label>
+          </div>
+
+          <label class="toggle">
+            <input type="checkbox" id="transparent-sphere" />
+            <span class="toggle__track" aria-hidden="true"></span>
+            <span class="toggle__label">Прозрачная сфера (только текст)</span>
+          </label>
+        </section>
+
+        <section class="section debug-only">
+          <h2 class="section__title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m8 2 1.88 1.88M14.12 3.88 16 2" />
+              <path d="M9 7.13v-1a3 3 0 1 1 6 0v1" />
+              <path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6" />
+              <path d="M12 20v-9M6.53 9C4.6 8.8 3 7.1 3 5M6 13H2M3 21c0-2.1 1.7-3.9 3.8-4M20.97 5c0 2.1-1.6 3.8-3.5 4M22 13h-4M17.2 17c2.1.1 3.8 1.9 3.8 4" />
+            </svg>
+            Отладка
+          </h2>
+
+          <label class="toggle">
+            <input type="checkbox" id="debug-bounds" />
+            <span class="toggle__track" aria-hidden="true"></span>
+            <span class="toggle__label">Показать габариты текста</span>
+          </label>
+          <p class="field__hint">
+            Заливка контрастным цветом под текстом показывает ширину и высоту
+            текстового контейнера. Только в превью — в SVG не попадает.
+          </p>
+        </section>
+
+        <div class="panel__footer">
+          <button type="button" class="btn" id="save-btn">Экспортировать в SVG</button>
+          <button type="button" class="btn btn--secondary debug-only" id="export-settings-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <path d="M7 10l5 5 5-5" />
+              <path d="M12 15V3" />
+            </svg>
+            Экспортировать настройки
+          </button>
+
+          <p class="hint" id="viewport-hint">
+            Перетаскивайте сферу мышью или пальцем для вращения
+          </p>
+        </div>
+      </aside>
+
+      <main class="viewport">
+        <canvas id="canvas"></canvas>
+
+        <!-- Вход в режим отладки. Иконка жучка — та же, что в заголовке
+             секции «Отладка». -->
+        <div class="debug-corner">
+          <span class="debug-corner__label">Режим отладки</span>
+          <button
+            type="button"
+            class="icon-btn debug-corner__btn"
+            id="debug-toggle"
+            aria-pressed="false"
+            aria-label="Режим отладки"
+          >
+            <svg class="debug-corner__bug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="m8 2 1.88 1.88M14.12 3.88 16 2" />
+              <path d="M9 7.13v-1a3 3 0 1 1 6 0v1" />
+              <path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6" />
+              <path d="M12 20v-9M6.53 9C4.6 8.8 3 7.1 3 5M6 13H2M3 21c0-2.1 1.7-3.9 3.8-4M20.97 5c0 2.1-1.6 3.8-3.5 4M22 13h-4M17.2 17c2.1.1 3.8 1.9 3.8 4" />
+            </svg>
+            <svg class="debug-corner__close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </main>
+    </div>
+
+    <!-- Пресеты размера шрифта (как в Figma). Ручной ввод тоже работает. -->
+    <datalist id="font-size-presets">
+      <option value="10"></option>
+      <option value="11"></option>
+      <option value="12"></option>
+      <option value="13"></option>
+      <option value="14"></option>
+      <option value="15"></option>
+      <option value="16"></option>
+      <option value="20"></option>
+      <option value="24"></option>
+      <option value="32"></option>
+      <option value="36"></option>
+      <option value="40"></option>
+      <option value="48"></option>
+      <option value="64"></option>
+      <option value="96"></option>
+      <option value="128"></option>
+    </datalist>
+
+    <!-- Классический ряд фокусных расстояний. Ручной ввод тоже работает. -->
+    <datalist id="focal-length-presets">
+      <option value="24"></option>
+      <option value="28"></option>
+      <option value="35"></option>
+      <option value="50"></option>
+      <option value="85"></option>
+      <option value="105"></option>
+      <option value="135"></option>
+      <option value="200"></option>
+    </datalist>
+
+    <!-- Шаблон одного текстового блока -->
+    <template id="block-template">
+      <div class="block" draggable="false">
+        <div class="block__head">
+          <span class="block__handle" title="Перетащить" aria-label="Перетащить">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <circle cx="9" cy="6" r="1.6" />
+              <circle cx="9" cy="12" r="1.6" />
+              <circle cx="9" cy="18" r="1.6" />
+              <circle cx="15" cy="6" r="1.6" />
+              <circle cx="15" cy="12" r="1.6" />
+              <circle cx="15" cy="18" r="1.6" />
+            </svg>
+          </span>
+          <span class="block__title">Строка 1</span>
+          <button type="button" class="block__delete" title="Удалить строку" aria-label="Удалить строку">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <textarea class="block__text" rows="2" spellcheck="false" placeholder="Введите текст"></textarea>
+        <div class="field-row field-row--size">
+          <label class="field debug-only">
+            <span class="field__label">Начертание</span>
+            <select class="block__weight">
+              <option value="400">Regular</option>
+              <option value="700">Bold</option>
+            </select>
+          </label>
+          <label class="field">
+            <span class="field__label">Кегль</span>
+            <input type="number" class="block__size" list="font-size-presets" min="1" max="2000" step="1" />
+          </label>
+        </div>
+        <label class="field">
+          <span class="field__head">
+            <span class="field__label">Интерлиньяж</span>
+            <span class="field__value block__linefactor-value">0.80×</span>
+          </span>
+          <input type="range" class="block__linefactor" min="60" max="220" value="80" />
+        </label>
+      </div>
+    </template>
+
+    <script>
+      // --- UI-хром (внешний вид, без бизнес-логики) --------------------------
+      (() => {
+        const root = document.documentElement;
+
+        document.getElementById("theme-toggle").addEventListener("click", () => {
+          const dark = root.classList.toggle("dark");
+          try {
+            localStorage.setItem("sphere-theme", dark ? "dark" : "light");
+          } catch {}
+        });
+
+        // У нативного <input type="range"> нет закрашенной части трека
+        // (кроме Firefox с ::-moz-range-progress), а у слайдера shadcn она есть.
+        // Отдаём прогресс в CSS-переменную и рисуем градиентом.
+        const paint = (input) => {
+          const min = Number(input.min || 0);
+          const max = Number(input.max || 100);
+          const value = Number(input.value);
+          const percent = max > min ? ((value - min) / (max - min)) * 100 : 0;
+          input.style.setProperty("--range-progress", `${percent}%`);
+        };
+        const paintAll = () => document.querySelectorAll('input[type="range"]').forEach(paint);
+
+        document.addEventListener("input", (event) => {
+          const target = event.target;
+          if (target instanceof HTMLInputElement && target.type === "range") paint(target);
+        });
+
+        // Блоки текста пересоздаются из <template> — перекрашиваем после рендера.
+        new MutationObserver(paintAll).observe(document.getElementById("blocks"), {
+          childList: true,
+        });
+        paintAll();
+      })();
+    </script>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "./vendor/three.module.js",
+          "three/addons/": "./vendor/three-addons/",
+          "opentype": "./vendor/opentype.module.js"
+        }
+      }
+    </script>
+    <script type="module" src="main.js"></script>
+  </body>
+</html>
