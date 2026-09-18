@@ -38,6 +38,7 @@ const debugToggleBtn = document.getElementById("debug-toggle");
 const alignButtons = [...document.querySelectorAll(".segmented__btn[data-align]")];
 const saveBtn = document.getElementById("save-btn");
 const exportSettingsBtn = document.getElementById("export-settings-btn");
+const importSettingsBtn = document.getElementById("import-settings-btn");
 
 const TEXTURE_WIDTH = 2048;
 const TEXTURE_HEIGHT = 1024;
@@ -512,6 +513,86 @@ function exportSettings() {
   setFontsStatus("Настройки выгружены в JSON.");
 }
 
+function applySettings(settings) {
+  if (settings.format !== "sphere-typography/settings") {
+    setFontsStatus("Ошибка: неверный формат файла.");
+    return;
+  }
+
+  // Blocks
+  blockSeq = 0;
+  blocksState.length = 0;
+  for (const b of settings.blocks ?? []) {
+    blocksState.push(makeBlock({ text: b.text, weight: b.weight, size: b.size, lineFactor: b.lineFactor }));
+  }
+
+  // Composition
+  blockGapInput.value = String(Math.round((settings.composition.blockGapFactor ?? 1.2) * 100));
+  textAngleInput.value = String(settings.composition.textAngleDeg ?? 0);
+  scaleInput.value = String(Math.round((settings.composition.scale ?? 1) * 100));
+  setTextAlign(settings.composition.align ?? "center");
+
+  // Colors
+  textColorInput.value = settings.colors.text ?? "#ff6a00";
+  pageBgColorInput.value = settings.colors.pageBackground ?? "#080b14";
+  transparentSphereInput.checked = !!settings.colors.transparentSphere;
+
+  // Debug overlay
+  debugBoundsInput.checked = !!(settings.debug?.boundsOverlay);
+
+  // Camera focal length + zoom
+  focalLength = settings.camera.focalLengthMm ?? DEFAULT_FOCAL_LENGTH;
+  focalLengthInput.value = String(focalLength);
+  zoomFactor = settings.camera.zoomFactor ?? 1;
+  applyCameraFraming();
+
+  // Restore orbit position from saved spherical angles
+  const azimuth = (settings.camera.azimuthDeg * Math.PI) / 180;
+  const polar = (settings.camera.polarDeg * Math.PI) / 180;
+  const distance = framedDistance() * zoomFactor;
+  controls.target.set(
+    settings.camera.target?.x ?? 0,
+    settings.camera.target?.y ?? 0,
+    settings.camera.target?.z ?? 0,
+  );
+  camera.position.set(
+    controls.target.x + distance * Math.sin(polar) * Math.sin(azimuth),
+    controls.target.y + distance * Math.cos(polar),
+    controls.target.z + distance * Math.sin(polar) * Math.cos(azimuth),
+  );
+  controls.update();
+
+  // Update all labels and redraw
+  updateBlockGapLabel();
+  updateAngleLabel();
+  updateScaleLabel();
+  updatePageBackground(pageBgColorInput.value);
+  renderBlocks();
+  applySphereTransparency();
+  setFontsStatus("Настройки импортированы.");
+}
+
+function importSettings() {
+  const input = document.getElementById("import-settings-input");
+  input.value = "";
+  input.click();
+}
+
+document.getElementById("import-settings-input").addEventListener("change", (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.addEventListener("load", () => {
+    try {
+      const settings = JSON.parse(reader.result);
+      applySettings(settings);
+    } catch {
+      setFontsStatus("Ошибка: не удалось прочитать JSON.");
+    }
+  });
+  reader.readAsText(file);
+});
+
 async function saveSvg() {
   if (saveBtn.disabled) return;
 
@@ -826,6 +907,7 @@ focalLengthInput.addEventListener("change", () => {
 });
 saveBtn.addEventListener("click", saveSvg);
 exportSettingsBtn.addEventListener("click", exportSettings);
+importSettingsBtn.addEventListener("click", importSettings);
 window.addEventListener("resize", resize);
 
 focalLengthInput.min = String(MIN_FOCAL_LENGTH);
